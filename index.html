@@ -1,0 +1,315 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080e1c">
+<title>Private Nachrichten</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#080e1c;
+ color:white;
+ font-family:Arial,sans-serif;
+ min-height:100vh;
+}
+header{
+ text-align:center;
+ padding:35px 15px 25px;
+ background:linear-gradient(145deg,#102b50,#080e1c);
+ border-bottom:1px solid #183b65;
+}
+.logo{
+ font-size:42px;
+ color:#39a9ff;
+}
+h1{font-size:29px;margin:10px 0 5px}
+.subtitle{color:#a8c4e5;font-size:14px}
+.brand{color:#39a9ff;font-weight:bold;margin-top:10px}
+nav{
+ display:flex;
+ gap:10px;
+ padding:15px;
+ max-width:600px;
+ margin:auto;
+}
+nav button{
+ flex:1;
+}
+button{
+ background:#1689e8;
+ border:0;
+ color:white;
+ padding:13px 16px;
+ border-radius:12px;
+ font-size:15px;
+ font-weight:bold;
+ cursor:pointer;
+}
+button:active{transform:scale(.97)}
+.secondary{background:#142a45;border:1px solid #28517b}
+main{
+ max-width:600px;
+ margin:auto;
+ padding:15px;
+}
+.card{
+ background:#101e32;
+ border:1px solid #1b3b60;
+ padding:18px;
+ border-radius:17px;
+ margin-bottom:15px;
+}
+h2{font-size:19px;margin:0 0 14px}
+input,textarea{
+ width:100%;
+ background:#080f1d;
+ border:1px solid #28517b;
+ color:white;
+ border-radius:10px;
+ padding:13px;
+ font-size:16px;
+ outline:none;
+ margin:7px 0 12px;
+}
+textarea{resize:vertical;min-height:100px}
+input:focus,textarea:focus{border-color:#39a9ff}
+.label{font-size:13px;color:#9db9d8}
+.linkbox{
+ background:#080f1d;
+ padding:13px;
+ border-radius:10px;
+ overflow-wrap:anywhere;
+ color:#72bdff;
+ margin:10px 0;
+}
+.stat{
+ font-size:34px;
+ color:#39a9ff;
+ font-weight:bold;
+}
+.message{
+ background:#0b1729;
+ border:1px solid #1d416a;
+ border-radius:12px;
+ padding:14px;
+ margin:10px 0;
+}
+.message p{overflow-wrap:anywhere}
+.message small{color:#89a8ca}
+.message-actions{
+ display:flex;
+ gap:8px;
+ flex-wrap:wrap;
+}
+.message-actions button{font-size:13px;padding:9px}
+.delete{background:#743247}
+.empty{text-align:center;color:#91a9c5;padding:20px}
+.hidden{display:none}
+footer{
+ text-align:center;
+ padding:25px;
+ color:#627d9e;
+ font-size:12px;
+}
+</style>
+</head>
+<body>
+
+<header>
+ <div class="logo">✉</div>
+ <h1>Private Nachrichten</h1>
+ <div class="subtitle">von John entwickelt</div>
+ <div class="brand">z3zusu</div>
+</header>
+
+<nav>
+ <button onclick="showPage('home')">Startseite</button>
+ <button class="secondary" onclick="showPage('inbox')">Posteingang</button>
+</nav>
+
+<main>
+
+<section id="home">
+ <div class="card">
+  <h2>Willkommen! 💙</h2>
+  <p>Dein Platz für private Nachrichten.</p>
+  <p class="label">Erstelle deinen Profilnamen und teile deinen Link.</p>
+ </div>
+
+ <div class="card">
+  <h2>Dein Profil</h2>
+  <label class="label">Profilname</label>
+  <input id="username" placeholder="Dein Name">
+  <button onclick="saveProfile()">Profil speichern</button>
+ </div>
+
+ <div class="card">
+  <h2>Dein persönlicher Link</h2>
+  <div class="linkbox" id="profileLink">Noch kein Profil erstellt</div>
+  <button onclick="copyLink()">Link kopieren</button>
+  <button class="secondary" onclick="shareLink()">Teilen</button>
+ </div>
+
+ <div class="card">
+  <h2>Dein Posteingang</h2>
+  <div class="stat" id="count">0</div>
+  <div class="label">Nachrichten auf diesem Gerät</div>
+  <br>
+  <button onclick="showPage('inbox')">Nachrichten ansehen</button>
+ </div>
+</section>
+
+<section id="inbox" class="hidden">
+ <div class="card">
+  <h2>📥 Posteingang</h2>
+  <div id="messages"></div>
+ </div>
+
+ <div class="card">
+  <h2>Nachricht ausprobieren</h2>
+  <p class="label">Diese Demo speichert Nachrichten nur auf diesem Gerät.</p>
+  <textarea id="testMessage" placeholder="Schreibe eine Nachricht..."></textarea>
+  <button onclick="addMessage()">Nachricht senden</button>
+ </div>
+</section>
+
+</main>
+
+<footer>
+ Private Nachrichten · von John entwickelt · z3zusu
+</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+
+let profile=localStorage.getItem("privateProfile")||"";
+let messages=JSON.parse(localStorage.getItem("privateMessages")||"[]");
+
+function showPage(page){
+ $("home").classList.toggle("hidden",page!=="home");
+ $("inbox").classList.toggle("hidden",page!=="inbox");
+ if(page==="inbox")renderMessages();
+}
+
+function saveProfile(){
+ let name=$("username").value.trim();
+ if(!name){
+  alert("Bitte gib einen Profilnamen ein.");
+  return;
+ }
+ profile=name.replace(/\s+/g,"");
+ localStorage.setItem("privateProfile",profile);
+ updateProfile();
+ alert("Profil gespeichert!");
+}
+
+function updateProfile(){
+ $("username").value=profile;
+ $("profileLink").textContent=profile?
+  location.origin+location.pathname+"?user="+encodeURIComponent(profile):
+  "Noch kein Profil erstellt";
+}
+
+async function copyLink(){
+ if(!profile){
+  alert("Erstelle zuerst dein Profil.");
+  return;
+ }
+ let link=location.origin+location.pathname+"?user="+encodeURIComponent(profile);
+ try{
+  await navigator.clipboard.writeText(link);
+  alert("Link kopiert!");
+ }catch(e){
+  prompt("Kopiere deinen Link:",link);
+ }
+}
+
+async function shareLink(){
+ if(!profile){
+  alert("Erstelle zuerst dein Profil.");
+  return;
+ }
+ let link=location.origin+location.pathname+"?user="+encodeURIComponent(profile);
+ if(navigator.share){
+  try{await navigator.share({title:"Private Nachrichten",url:link})}catch(e){}
+ }else{
+  copyLink();
+ }
+}
+
+function addMessage(){
+ let text=$("testMessage").value.trim();
+ if(!text)return alert("Bitte schreibe eine Nachricht.");
+ messages.unshift({
+  id:Date.now(),
+  text:text,
+  date:new Date().toLocaleString("de-DE")
+ });
+ localStorage.setItem("privateMessages",JSON.stringify(messages));
+ $("testMessage").value="";
+ renderMessages();
+ updateCount();
+}
+
+function deleteMessage(id){
+ if(!confirm("Nachricht wirklich löschen?"))return;
+ messages=messages.filter(m=>m.id!==id);
+ localStorage.setItem("privateMessages",JSON.stringify(messages));
+ renderMessages();
+ updateCount();
+}
+
+function replyMessage(id){
+ let m=messages.find(x=>x.id===id);
+ if(!m)return;
+ let answer=prompt("Deine Antwort:");
+ if(answer===null||!answer.trim())return;
+ alert("Antwort vorbereitet: "+answer);
+}
+
+function renderMessages(){
+ let area=$("messages");
+ area.innerHTML="";
+ if(messages.length===0){
+  area.innerHTML='<div class="empty">Noch keine Nachrichten 💙</div>';
+  return;
+ }
+ messages.forEach(m=>{
+  let box=document.createElement("div");
+  box.className="message";
+  let p=document.createElement("p");
+  p.textContent=m.text;
+  let small=document.createElement("small");
+  small.textContent=m.date;
+  let actions=document.createElement("div");
+  actions.className="message-actions";
+  let reply=document.createElement("button");
+  reply.textContent="Antworten";
+  reply.onclick=()=>replyMessage(m.id);
+  let del=document.createElement("button");
+  del.textContent="Löschen";
+  del.className="delete";
+  del.onclick=()=>deleteMessage(m.id);
+  actions.append(reply,del);
+  box.append(p,small,actions);
+  area.append(box);
+ });
+}
+
+function updateCount(){
+ $("count").textContent=messages.length;
+}
+
+updateProfile();
+updateCount();
+
+const target=new URLSearchParams(location.search).get("user");
+if(target){
+ showPage("inbox");
+}
+</script>
+</body>
+</html>
